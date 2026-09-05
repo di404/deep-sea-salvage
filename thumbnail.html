@@ -4,53 +4,163 @@
 canvas{max-width:90%;border:1px solid #1a5c8a;border-radius:8px;margin:10px}
 p{color:#9cc8e6}</style></head>
 <body>
-<h2>Deep Salvage Inc. — thumbnails (right-click → save image)</h2>
-<p>CrazyGames needs: 16:9 cover, square icon. Click a canvas to download.</p>
+<h2>Deep Salvage Inc. — thumbnails (click a canvas to download)</h2>
+<p>CrazyGames needs: 16:9 cover, square icon. Art mirrors the in-game scene: boat crane, claw, sonar, visible targets.</p>
 <canvas id="c169" width="1280" height="720"></canvas>
 <canvas id="c11" width="512" height="512"></canvas>
 <script type="module">
 import { drawCreature } from './js/scene.js';
 
+function hsl(h, s, l, a = 1) { return `hsla(${h},${s}%,${l}%,${a})`; }
+
 function bg(c, w, h) {
-  const g = c.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, '#8ed8f8'); g.addColorStop(.25, '#2a86c9');
-  g.addColorStop(.6, '#123a63'); g.addColorStop(1, '#050f1f');
-  c.fillStyle = g; c.fillRect(0, 0, w, h);
+  const waterY = h * .42;
+  const sky = c.createLinearGradient(0, 0, 0, waterY);
+  sky.addColorStop(0, '#aee3f8'); sky.addColorStop(1, '#d8f2fc');
+  c.fillStyle = sky; c.fillRect(0, 0, w, waterY);
+  const sea = c.createLinearGradient(0, waterY, 0, h);
+  sea.addColorStop(0, '#2a86c9'); sea.addColorStop(.5, '#123a63'); sea.addColorStop(1, '#050f1f');
+  c.fillStyle = sea; c.fillRect(0, waterY, w, h - waterY);
+  // sun + clouds
+  const halo = c.createRadialGradient(w * .8, h * .12, 8, w * .8, h * .12, h * .22);
+  halo.addColorStop(0, 'rgba(255,244,200,.95)'); halo.addColorStop(1, 'rgba(255,244,200,0)');
+  c.fillStyle = halo; c.beginPath(); c.arc(w * .8, h * .12, h * .22, 0, 7); c.fill();
+  c.fillStyle = '#ffec9e'; c.beginPath(); c.arc(w * .8, h * .12, h * .06, 0, 7); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.9)';
+  c.beginPath(); c.ellipse(w * .18, h * .1, w * .045, h * .022, 0, 0, 7); c.ellipse(w * .21, h * .09, w * .03, h * .018, 0, 0, 7); c.fill();
+  c.beginPath(); c.ellipse(w * .55, h * .16, w * .035, h * .017, 0, 0, 7); c.fill();
+  // waterline
+  c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, waterY - 2, w, 3);
 }
-function claw(c, x, y, s, hue = 210) {
-  c.save(); c.translate(x, y); c.scale(s, s);
-  c.strokeStyle = '#e6eef5'; c.lineWidth = 5;
-  c.beginPath(); c.moveTo(0, -400); c.lineTo(0, -30); c.stroke();
-  c.fillStyle = `hsl(${hue},55%,58%)`; c.strokeStyle = `hsl(${hue},50%,32%)`; c.lineWidth = 4;
-  c.beginPath(); c.roundRect(-26, -40, 52, 28, 8); c.fill(); c.stroke();
+
+function boat(c, x, waterY, s) {
+  c.save(); c.translate(x, waterY); c.scale(s, s);
+  // crane post + boom + pulley
+  c.strokeStyle = '#6d7f92'; c.lineWidth = 6; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(46, -12); c.lineTo(46, -64); c.stroke();
+  c.lineWidth = 5;
+  c.beginPath(); c.moveTo(46, -62); c.lineTo(92, -34); c.stroke();
+  c.fillStyle = '#37485a'; c.beginPath(); c.arc(92, -34, 6, 0, 7); c.fill();
+  c.fillStyle = '#ffd257'; c.beginPath(); c.arc(92, -34, 2.2, 0, 7); c.fill();
+  // flag
+  c.strokeStyle = '#5b7086'; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(46, -64); c.lineTo(46, -82); c.stroke();
+  c.fillStyle = '#ffd257'; c.beginPath(); c.moveTo(46, -82); c.lineTo(62, -77); c.lineTo(46, -72); c.fill();
+  // hull
+  const hull = c.createLinearGradient(0, -12, 0, 16);
+  hull.addColorStop(0, '#a85a2c'); hull.addColorStop(1, '#6e3a1a');
+  c.fillStyle = hull;
+  c.beginPath();
+  c.moveTo(-74, -12); c.lineTo(66, -12);
+  c.quadraticCurveTo(70, 2, 46, 12); c.quadraticCurveTo(0, 18, -48, 10);
+  c.quadraticCurveTo(-72, 2, -74, -12); c.closePath(); c.fill();
+  c.fillStyle = '#c96a2e'; c.fillRect(-74, -16, 140, 5);
+  // cabin
+  c.fillStyle = '#efe9da'; c.beginPath(); c.roundRect(-58, -34, 40, 26, 3); c.fill();
+  c.fillStyle = '#cf4b32'; c.beginPath(); c.roundRect(-62, -40, 48, 8, 3); c.fill();
+  c.fillStyle = '#7fb4d4'; c.beginPath(); c.roundRect(-50, -28, 10, 8, 2); c.fill();
+  c.restore();
+}
+
+function claw(c, x, y, ang, s, open = .45) {
+  c.save(); c.translate(x, y); c.rotate(ang); c.scale(s, s);
+  // cable stub
+  c.strokeStyle = 'rgba(230,238,245,.95)'; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(0, -200); c.lineTo(0, -14); c.stroke();
+  // shackle
+  c.strokeStyle = '#46586b'; c.lineWidth = 2.8;
+  c.beginPath(); c.arc(0, -14, 4.5, 0, 7); c.stroke();
+  // mount
+  const mg = c.createLinearGradient(0, -11, 0, 0);
+  mg.addColorStop(0, '#eef3f8'); mg.addColorStop(1, '#93a7ba');
+  c.fillStyle = mg; c.strokeStyle = '#5b7086'; c.lineWidth = 2;
+  c.beginPath(); c.roundRect(-11, -11, 22, 13, 4); c.fill(); c.stroke();
+  c.fillStyle = '#ffd257'; c.beginPath(); c.arc(0, -4.5, 3, 0, 7); c.fill();
+  // pincers
   for (const sd of [-1, 1]) {
-    c.save(); c.scale(sd, 1); c.rotate(sd * .35);
-    c.beginPath(); c.moveTo(10, -24); c.quadraticCurveTo(46, -4, 38, 30);
-    c.quadraticCurveTo(26, 12, 8, 6); c.closePath();
-    c.fillStyle = `hsl(${hue},55%,62%)`; c.fill(); c.stroke();
+    c.save(); c.translate(0, 1); c.rotate(sd * open);
+    const pg = c.createLinearGradient(0, 0, 0, 30);
+    pg.addColorStop(0, hsl(210, 52, 68)); pg.addColorStop(1, hsl(210, 55, 38));
+    c.fillStyle = pg; c.strokeStyle = hsl(210, 50, 26); c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(4, -7);
+    c.quadraticCurveTo(20, -3, 19, 13);
+    c.quadraticCurveTo(18, 22, 10, 25);
+    c.lineTo(7, 27);
+    c.quadraticCurveTo(12, 13, 3.5, -1);
+    c.closePath(); c.fill(); c.stroke();
     c.restore();
   }
   c.restore();
 }
+
+function sonar(c, x, y, w, h) {
+  c.save();
+  c.fillStyle = 'rgba(4,20,36,.78)';
+  c.beginPath(); c.roundRect(x, y, w, h, 12); c.fill();
+  c.strokeStyle = 'rgba(120,180,220,.4)'; c.lineWidth = 1.5; c.stroke();
+  const gr = c.createLinearGradient(0, y, 0, y + h);
+  gr.addColorStop(0, 'rgba(110,231,138,.12)'); gr.addColorStop(1, 'rgba(255,210,87,.18)');
+  c.fillStyle = gr; c.beginPath(); c.roundRect(x + 4, y + 4, w - 8, h - 8, 9); c.fill();
+  const dots = [
+    [.4, .12, 3, 'rgba(220,240,255,.85)'], [.6, .22, 3, 'rgba(220,240,255,.85)'],
+    [.35, .3, 4.5, '#5ee08a'], [.65, .42, 5, '#7fb0ff'],
+    [.5, .55, 6.5, '#c08bff'], [.42, .68, 4, '#7fb0ff'],
+    [.55, .62, 7, '#ffd257'],
+  ];
+  for (const [fx, fy, r, col] of dots) {
+    c.fillStyle = col;
+    c.beginPath(); c.arc(x + fx * w, y + fy * h, r, 0, 7); c.fill();
+    if (col === '#ffd257' || col === '#c08bff') {
+      c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.4;
+      c.beginPath(); c.arc(x + fx * w, y + fy * h, r + 3, 0, 7); c.stroke();
+    }
+  }
+  c.fillStyle = '#ff5252';
+  c.save(); c.translate(x + .7 * w, y + .78 * h); c.rotate(Math.PI / 4); c.fillRect(-3.5, -3.5, 7, 7); c.restore();
+  // trajectory dashes
+  c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2.5; c.setLineDash([4, 6]);
+  c.beginPath(); c.moveTo(x + .48 * w, y + 6); c.lineTo(x + .55 * w, y + .58 * h); c.stroke();
+  c.setLineDash([]);
+  c.restore();
+}
+
 function compose(c, w, h, s) {
   bg(c, w, h);
-  // creatures
-  drawCreature(c, { shape: 'squid', hue: 265, sz: 40, glow: 0, prism: 0 }, w * .68, h * .62, 1.3, { scale: 3.2 * s, dir: -1 });
-  drawCreature(c, { shape: 'angler', hue: 35, sz: 40, glow: 1, prism: 0 }, w * .2, h * .78, 1.1, { scale: 2.2 * s, dir: 1 });
-  drawCreature(c, { shape: 'jelly', hue: 195, sz: 40, glow: 0, prism: 0 }, w * .3, h * .45, 1.5, { scale: 1.8 * s, dir: 1 });
-  drawCreature(c, { shape: 'fish', hue: 205, sz: 40, glow: 0, prism: 0 }, w * .15, h * .3, 1.7, { scale: 1.5 * s, dir: 1 });
-  drawCreature(c, { shape: 'chest', hue: 28, sz: 40, glow: 0, prism: 0 }, w * .8, h * .82, 1.2, { scale: 1.8 * s, dir: 1 });
+  const waterY = h * .42;
+  // targets: creatures visible in the water column
+  drawCreature(c, { shape: 'squid', hue: 265, sz: 40, glow: 0, prism: 0 }, w * .70, h * .68, 1.3, { scale: 3 * s, dir: -1 });
+  drawCreature(c, { shape: 'angler', hue: 35, sz: 40, glow: 1, prism: 0 }, w * .24, h * .80, 1.1, { scale: 2 * s, dir: 1 });
+  drawCreature(c, { shape: 'jelly', hue: 195, sz: 40, glow: 0, prism: 0 }, w * .38, h * .62, 1.5, { scale: 1.6 * s, dir: 1 });
+  drawCreature(c, { shape: 'turtle', hue: 115, sz: 40, glow: 0, prism: 0 }, w * .18, h * .55, 1.7, { scale: 1.6 * s, dir: 1 });
+  drawCreature(c, { shape: 'chest', hue: 28, sz: 40, glow: 0, prism: 0 }, w * .52, h * .88, 1.2, { scale: 1.8 * s, dir: 1 });
+  drawCreature(c, { shape: 'fish', hue: 205, sz: 40, glow: 0, prism: 0 }, w * .47, h * .47, 1.7, { scale: 1.4 * s, dir: 1 });
+  drawCreature(c, { shape: 'coins', hue: 45, sz: 40, glow: 0, prism: 0 }, w * .82, h * .86, 1.2, { scale: 1.6 * s, dir: 1 });
+  // bubbles
+  c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 2;
+  [[.30, .74], [.33, .68], [.68, .5], [.62, .44], [.88, .62]].forEach(([fx, fy]) => {
+    c.beginPath(); c.arc(w * fx, h * fy, h * .012, 0, 7); c.stroke();
+  });
+  // sonar panel on the right edge
+  sonar(c, w * .895, h * .08, w * .082, h * .62);
+  // boat + claw reaching toward the squid
+  boat(c, w * .38, waterY, s);
+  const cx = w * .38 + 92 * s, cy = waterY - 34 * s;
+  const cbl = 120 * s;
+  const ex = cx + Math.sin(.42) * cbl, ey = cy + Math.cos(.42) * cbl;
+  c.strokeStyle = 'rgba(230,238,245,.95)'; c.lineWidth = 3 * s;
+  c.beginPath(); c.moveTo(cx, cy); c.lineTo(ex, ey); c.stroke();
+  claw(c, ex, ey, -.42, 1.15 * s, .8);
   // title bar
-  c.fillStyle = 'rgba(4,26,44,.82)';
-  c.fillRect(0, h * .82, w, h * .18);
+  c.fillStyle = 'rgba(4,26,44,.85)';
+  c.fillRect(0, h * .84, w, h * .16);
   c.fillStyle = '#ffd257';
   c.font = `900 ${Math.floor(h * .1)}px 'Trebuchet MS', sans-serif`;
   c.textAlign = 'center'; c.textBaseline = 'middle';
-  c.fillText('DEEP SALVAGE INC.', w / 2, h * .885);
+  c.fillText('DEEP SALVAGE INC.', w / 2, h * .895);
   c.fillStyle = '#9cc8e6';
-  c.font = `${Math.floor(h * .048)}px 'PingFang SC', sans-serif`;
-  c.fillText('深海捞捞 · salvage the abyss', w / 2, h * .952);
-  claw(c, w * .62, h * .52, s);
+  c.font = `${Math.floor(h * .046)}px 'PingFang SC', sans-serif`;
+  c.fillText('深海捞捞 · aim · dive · collect', w / 2, h * .955);
 }
 compose(document.getElementById('c169').getContext('2d'), 1280, 720, 1);
 compose(document.getElementById('c11').getContext('2d'), 512, 512, .62);

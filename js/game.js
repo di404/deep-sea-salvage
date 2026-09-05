@@ -46,7 +46,7 @@ function ensureBands(topM, botM) {
     G.spawned.add(k);
     const ym = b * BAND + rand(-18, 18);
     if (z.id >= 2 && Math.random() < 0.1) {
-      G.ents.push({ mine: true, x: rand(.08, .92), ym, ph: rand(0, 6) });
+      G.ents.push({ mine: true, x: rand(.08, .92), ym, ph: rand(0, 6), bk: k });
     }
     for (let slot = 0; slot < 3; slot++) {
       if (Math.random() >= 0.8) continue;
@@ -64,6 +64,7 @@ function ensureBands(topM, botM) {
         sp: rand(12, 30) * (z.mech === 'currents' ? 1.8 : 1), ph: rand(0, 6),
         golden: Math.random() < mods.goldenChance,
         echo: z.mech === 'echo' && Math.random() < 0.2,
+        bk: k,
       });
     }
   }
@@ -199,8 +200,15 @@ export function update(dt) {
     if (e.x > .96) { e.x = .96; e.dir = -1; }
     e.ph += dt * (2 + e.sp / 30);
   }
+  // cull ents that left the view AND free their spawn bands so they repopulate on return
   const held = new Set(c.hold);
-  G.ents = G.ents.filter(e => held.has(e) || (!e.dead && e.ym * PPM > G.camY - 600 && e.ym * PPM < G.camY + G.H + 900));
+  const kept = [];
+  for (const e of G.ents) {
+    const inView = held.has(e) || (!e.dead && e.ym * PPM > G.camY - 600 && e.ym * PPM < G.camY + G.H + 900);
+    if (inView) kept.push(e);
+    else if (e.bk && !held.has(e)) G.spawned.delete(e.bk);
+  }
+  G.ents = kept;
   if (G.ents.length > 120) G.ents.splice(0, G.ents.length - 120);
 
   // spawn around camera
