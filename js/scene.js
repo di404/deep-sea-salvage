@@ -339,19 +339,20 @@ export function drawClaw(c, skinHue, state, hold, t) {
   const { bx, by } = craneAnchor();
   const ang = G.claw.ang;
   const dx = Math.sin(ang), dy = Math.cos(ang);
+  const oy = -G.camY; // world y → screen y (waterline offset)
   // cable from boom pulley to claw, along the swing/drop direction
   ctx = c;
   ctx.strokeStyle = 'rgba(222,230,238,.92)';
   ctx.lineWidth = 2.4;
   ctx.beginPath();
-  ctx.moveTo(bx, by);
-  ctx.lineTo(tip.x - dx * 15, tip.y - dy * 15);
+  ctx.moveTo(bx, by + oy);
+  ctx.lineTo(tip.x - dx * 15, tip.y + oy - dy * 15);
   ctx.stroke();
   const prism = skinHue < 0;
   const hue = prism ? (t * 60) % 360 : skinHue;
   const open = state === 'drop' ? 1 : 0.18;
   ctx.save();
-  ctx.translate(tip.x, tip.y);
+  ctx.translate(tip.x, tip.y + oy);
   ctx.rotate(-ang);
   // mount block (steel)
   const mg = ctx.createLinearGradient(0, -16, 0, -6);
@@ -383,7 +384,7 @@ export function drawClaw(c, skinHue, state, hold, t) {
   // held catch hangs along the cable direction
   hold.forEach((e, i) => {
     const hx = tip.x + dx * (18 + i * 26);
-    const hy = tip.y + dy * (18 + i * 26);
+    const hy = tip.y + oy + dy * (18 + i * 26);
     drawCreature(c, e.def, hx, hy, t, { scale: .5, golden: e.golden, dir: 1 });
   });
 }

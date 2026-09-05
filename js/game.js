@@ -88,7 +88,7 @@ export function tryDrop(sx, sy) {
   }
   c.state = 'drop'; c.hold = [];
   SFX.splash();
-  spawnP(clawTip().x, 8, 'splash', '#cfeeff', 10);
+  spawnP(clawTip().x, 8 - G.camY, 'splash', '#cfeeff', 10);
   return true;
 }
 
@@ -256,7 +256,7 @@ function sellHold() {
   addCoins(total);
   st.lifetime.catches += c.hold.length;
   const { bx } = craneAnchor();
-  spawnP(bx, 10, 'splash', '#cfeeff', 14);
+  spawnP(bx, 8 - G.camY, 'splash', '#cfeeff', 14);
   floatText(bx + 60, 60, `+${fmt(total)}`, anyGolden ? '#ffd257' : '#ffffff');
   SFX.coin(c.hold.length); if (anyGolden) SFX.golden();
   c.hold = [];
