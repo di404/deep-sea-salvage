@@ -5,6 +5,7 @@ import { G, resize, update, resetWorld, tryDrop, calcOffline, chestArmed, bus, i
 import { render } from './scene.js';
 import * as meta from './meta.js';
 import { bindNav, initUIStrings, openOffline, openSignin, refreshDots, refreshContract, showTut, hideTut, zoneBanner, floatToast, reRenderPanel, panelIsOpen, openPanel } from './ui.js';
+import { icon } from './icons.js';
 
 let last = 0, saveAcc = 0, dotAcc = 0, lastStepAt = 0;
 
@@ -23,7 +24,7 @@ function step(dt) {
   if (dotAcc > 1) {
     dotAcc = 0;
     const rs = meta.researchState();
-    if (rs.justFinished) { floatToast(`🔬 ${L('scanned')} ⚡`); SFX.fanfare(); }
+    if (rs.justFinished) { floatToast(`${icon('flask', 16)} ${L('scanned')}`, '#8fd4a8'); SFX.fanfare(); }
     refreshDots();
     refreshContract();
     writeSave();
@@ -56,8 +57,8 @@ async function boot() {
 
   // bus wiring
   bus.on('newspecies', () => refreshDots());
-  bus.on('contractdone', g => { floatToast(`✅ ${L('contractDone')} +${g} 💎`); SFX.fanfare(); refreshDots(); });
-  bus.on('contractfail', () => { floatToast(`❌ ${L('contractFail')}`); SFX.bad(); refreshDots(); });
+  bus.on('contractdone', g => { floatToast(`${icon('target', 16)} ${L('contractDone')} +${g}`, '#5ee08a'); SFX.fanfare(); refreshDots(); });
+  bus.on('contractfail', () => { floatToast(L('contractFail'), '#ff6b6b'); SFX.bad(); refreshDots(); });
   bus.on('zone', () => { if (panelIsOpen() === 'upgrades') reRenderPanel(); });
 
   // offline earnings

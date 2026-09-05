@@ -69,8 +69,9 @@ function ensureBands(topM, botM) {
 }
 
 // ---------- claw ----------
-const SWING_W = 1.5, MAX_ANG = 1.05, ARM = 46;
-export function craneAnchor() { return { bx: G.W * 0.5, by: 46 }; }
+const SWING_W = 1.5, MAX_ANG = 1.02, ARM = 36;
+// pivot = crane boom tip (right side of the boat, above the waterline)
+export function craneAnchor() { return { bx: G.W * 0.5 + 74, by: -30 }; }
 export function clawTip() {
   const c = G.claw, { bx, by } = craneAnchor();
   return { x: bx + Math.sin(c.ang) * c.d, y: by + Math.cos(c.ang) * c.d };
@@ -94,7 +95,7 @@ export function catchSquid() {
   const gems = Math.max(1, Math.round(3 * mods.gemMult));
   const coins = avgZoneValue(st.zone) * mods.valueMult * 25;
   st.gems += gems; addCoins(coins);
-  floatText(G.W / 2, G.H * 0.4, `+${gems} 💎`, '#6ee7ff');
+  floatText(G.W / 2, G.H * 0.4, `+${gems}`, '#6ee7ff');
   floatText(G.W / 2, G.H * 0.4 + 26, `+${fmt(coins)}`, '#ffd257');
   SFX.golden(); bus.emit('golden', 1); bus.emit('catch', 1);
   G.squid = null;
@@ -165,7 +166,7 @@ export function update(dt) {
         e.dead = true; c.hold = []; c.state = 'haul'; G.shake = 1;
         spawnP(tip.x, tip.y, 'spark', '#ff8844', 22);
         SFX.bad();
-        floatText(G.W / 2, G.H * 0.45, '💥 ' + S_mine(), '#ff6b6b');
+        floatText(G.W / 2, G.H * 0.45, S_mine(), '#ff6b6b');
         break;
       }
       e.dead = true; c.hold.push(e);
@@ -241,7 +242,7 @@ function sellHold() {
     const isNew = !st.book[def.id];
     st.book[def.id] = (st.book[def.id] || 0) + 1;
     if (isNew) {
-      floatText(G.W / 2, G.H * 0.3, '🐟 ' + S_new(), '#5ee08a');
+      floatText(G.W / 2, G.H * 0.3, S_new(), '#5ee08a');
       SFX.fanfare(); SDK.happytime();
       bus.emit('newspecies', def);
     }

@@ -119,14 +119,14 @@ export const GEM_PRICE = { open1: 20, open10: 180 };
 
 // ---------------- WHEEL (8 segments, all positive) ----------------
 export const WHEEL = [
-  { id: 'coins_s', em: '🪙', w: 22, kind: 'coins', min: 10 },
-  { id: 'gems5', em: '💎', w: 16, kind: 'gems', n: 5 },
-  { id: 'buff30', em: '⚡', w: 16, kind: 'buff', min: 30 },
-  { id: 'coins_m', em: '💰', w: 14, kind: 'coins', min: 30 },
-  { id: 'egg', em: '🥚', w: 12, kind: 'egg' },
-  { id: 'gems15', em: '💎', w: 10, kind: 'gems', n: 15 },
-  { id: 'coins_xl', em: '🏆', w: 8, kind: 'coins', min: 120 },
-  { id: 'jackpot', em: '🎉', w: 2, kind: 'gems', n: 100 },
+  { id: 'coins_s', ic: 'coin', w: 22, kind: 'coins', min: 10 },
+  { id: 'gems5', ic: 'gem', w: 16, kind: 'gems', n: 5 },
+  { id: 'buff30', ic: 'bolt', w: 16, kind: 'buff', min: 30 },
+  { id: 'coins_m', ic: 'coin', w: 14, kind: 'coins', min: 30 },
+  { id: 'egg', ic: 'egg', w: 12, kind: 'egg' },
+  { id: 'gems15', ic: 'gem', w: 10, kind: 'gems', n: 15 },
+  { id: 'coins_xl', ic: 'trophy', w: 8, kind: 'coins', min: 120 },
+  { id: 'jackpot', ic: 'star', w: 2, kind: 'gems', n: 100 },
 ];
 
 // ---------------- GACHA POOL ----------------
@@ -147,13 +147,13 @@ export const GACHA_R = s => s.type === 'skin' ? (SKIN_BY[s.id]?.r ?? 0) : s.type
 
 // ---------------- SIGN-IN (7-day loop) ----------------
 export const SIGNIN = [
-  { em: '💎', kind: 'gems', n: 10 },
-  { em: '🪙', kind: 'coins', min: 15 },
-  { em: '⚡', kind: 'buff', min: 60 },
-  { em: '💎', kind: 'gems', n: 25 },
-  { em: '🥚', kind: 'egg', n: 1 },
-  { em: '💎', kind: 'gems', n: 50 },
-  { em: '🎁', kind: 'jackpot7' },
+  { ic: 'gem', kind: 'gems', n: 10 },
+  { ic: 'coin', kind: 'coins', min: 15 },
+  { ic: 'bolt', kind: 'buff', min: 60 },
+  { ic: 'gem', kind: 'gems', n: 25 },
+  { ic: 'egg', kind: 'egg', n: 1 },
+  { ic: 'gem', kind: 'gems', n: 50 },
+  { ic: 'gift', kind: 'jackpot7' },
 ];
 
 // ---------------- DAILY TASKS ----------------
@@ -176,10 +176,10 @@ export const RESEARCH = [
   { id: 'r_speed', nE: 'Overclock Rig', nZ: '超频吊臂', buff: 'speed', min: 12, time: 300 },
 ];
 export const BUFFS = {
-  x2: { em: '⚡', mult: 2, coins: true },
-  x3gem: { em: '💎', gems: 3 },
-  golden: { em: '🌟', goldenAdd: 0.05 },
-  speed: { em: '🌀', speed: 1.5 },
+  x2: { ic: 'bolt', mult: 2, coins: true },
+  x3gem: { ic: 'gem', gems: 3 },
+  golden: { ic: 'star', goldenAdd: 0.05 },
+  speed: { ic: 'clock', speed: 1.5 },
 };
 
 // ---------------- LAB (prestige layer 2) ----------------

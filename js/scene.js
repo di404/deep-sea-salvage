@@ -333,52 +333,126 @@ export function drawMine(c, x, y, t) {
   ctx.restore();
 }
 
-// ---------- boat & claw ----------
-export function drawBoat(c, skinHue, state, hold, t) {
-  ctx = c;
-  const { bx, by } = craneAnchor();
-  ctx.save(); ctx.translate(bx, by);
-  // crane post + boom
-  ctx.strokeStyle = '#d8dfe6'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(0, 34); ctx.lineTo(0, -6); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(16, 34); ctx.stroke();
-  ctx.restore();
-}
+// ---------- boat, crane, claw (pivot on the crane boom; claw rotates with swing) ----------
 export function drawClaw(c, skinHue, state, hold, t) {
-  ctx = c;
   const tip = clawTip();
   const { bx, by } = craneAnchor();
-  // cable
-  ctx.strokeStyle = 'rgba(230,238,245,.85)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(bx, by);
-  const tipTopY = tip.y - 14;
-  ctx.lineTo(tip.x, tipTopY); ctx.stroke();
-  // buoy at surface along cable? skip
-  const open = state === 'drop' ? 1 : 0.25;
+  const ang = G.claw.ang;
+  const dx = Math.sin(ang), dy = Math.cos(ang);
+  // cable from boom pulley to claw, along the swing/drop direction
+  ctx = c;
+  ctx.strokeStyle = 'rgba(222,230,238,.92)';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(tip.x - dx * 15, tip.y - dy * 15);
+  ctx.stroke();
   const prism = skinHue < 0;
   const hue = prism ? (t * 60) % 360 : skinHue;
-  ctx.save(); ctx.translate(tip.x, tip.y);
-  ctx.fillStyle = hsl(hue, 45, 55);
-  ctx.strokeStyle = hsl(hue, 50, 32); ctx.lineWidth = 2;
-  // body
+  const open = state === 'drop' ? 1 : 0.18;
+  ctx.save();
+  ctx.translate(tip.x, tip.y);
+  ctx.rotate(-ang);
+  // mount block (steel)
+  const mg = ctx.createLinearGradient(0, -16, 0, -6);
+  mg.addColorStop(0, '#eef3f8'); mg.addColorStop(1, '#93a7ba');
+  ctx.fillStyle = mg;
+  ctx.strokeStyle = '#5b7086'; ctx.lineWidth = 1.6;
   ctx.beginPath(); ctx.roundRect(-9, -16, 18, 10, 3); ctx.fill(); ctx.stroke();
-  // pincers
+  ctx.fillStyle = '#ffd257';
+  ctx.beginPath(); ctx.arc(0, -11, 2.4, 0, 7); ctx.fill();
+  // pincers (skin-tinted metal, hinge below mount)
+  const pg = ctx.createLinearGradient(0, -6, 0, 26);
+  pg.addColorStop(0, hsl(hue, 52, 68));
+  pg.addColorStop(1, hsl(hue, 55, 38));
   for (const s of [-1, 1]) {
-    ctx.save(); ctx.scale(s, 1);
-    ctx.rotate(s * open * 0.5);
-    ctx.fillStyle = hsl(hue, 55, 62);
-    ctx.beginPath(); ctx.moveTo(4, -8);
-    ctx.quadraticCurveTo(16, -2, 13, 10);
-    ctx.quadraticCurveTo(9, 4, 3, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.scale(s, 1); ctx.rotate(s * open * 0.55);
+    ctx.fillStyle = pg; ctx.strokeStyle = hsl(hue, 50, 26); ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(3, -6);
+    ctx.quadraticCurveTo(15, -2, 14, 10);
+    ctx.quadraticCurveTo(13.4, 16, 8, 18);
+    ctx.lineTo(5.6, 20);
+    ctx.quadraticCurveTo(9, 10, 3, 2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();
   }
-  ctx.fillStyle = '#ffd257'; ctx.beginPath(); ctx.arc(0, -11, 2.6, 0, 7); ctx.fill();
+  ctx.fillStyle = hsl(hue, 40, 30);
+  ctx.beginPath(); ctx.arc(0, -5, 2.8, 0, 7); ctx.fill();
   ctx.restore();
-  // held creatures hang below
+  // held catch hangs along the cable direction
   hold.forEach((e, i) => {
-    const def = e.def;
-    drawCreature(c, def, tip.x, tip.y + 16 + i * 26, t, { scale: .55, golden: e.golden, dir: 1 });
+    const hx = tip.x + dx * (18 + i * 26);
+    const hy = tip.y + dy * (18 + i * 26);
+    drawCreature(c, e.def, hx, hy, t, { scale: .5, golden: e.golden, dir: 1 });
   });
+}
+
+// boat + crane drawn at the surface in world space
+function drawBoatAt(c, skinHue, t) {
+  ctx = c;
+  const camY = G.camY;
+  const bx = G.W * 0.5;             // boat center
+  const oy = -camY;                 // world y0 on screen (waterline)
+  if (oy < -80 || oy > G.H + 200) return;
+  const deck = oy - 12;
+  ctx.save();
+  ctx.translate(0, 0);
+  // crane post + boom (pivot must match craneAnchor)
+  const px = bx + 74, py = oy - 30;
+  ctx.strokeStyle = '#6d7f92'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(bx + 36, deck - 2); ctx.lineTo(bx + 36, oy - 58); ctx.stroke();
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(bx + 36, oy - 56); ctx.lineTo(px, py + 4); ctx.stroke();
+  ctx.strokeStyle = '#46586b'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(bx + 36, oy - 50); ctx.lineTo(px - 8, py + 8); ctx.stroke();
+  // pulley
+  ctx.fillStyle = '#37485a';
+  ctx.beginPath(); ctx.arc(px, py, 6.5, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ffd257';
+  ctx.beginPath(); ctx.arc(px, py, 2.2, 0, 7); ctx.fill();
+  // hull
+  const hull = ctx.createLinearGradient(0, deck, 0, oy + 16);
+  hull.addColorStop(0, '#a85a2c'); hull.addColorStop(1, '#6e3a1a');
+  ctx.fillStyle = hull;
+  ctx.beginPath();
+  ctx.moveTo(bx - 74, deck);
+  ctx.lineTo(bx + 66, deck);
+  ctx.quadraticCurveTo(bx + 70, oy + 2, bx + 46, oy + 12);
+  ctx.quadraticCurveTo(bx, oy + 18, bx - 48, oy + 10);
+  ctx.quadraticCurveTo(bx - 72, oy + 2, bx - 74, deck);
+  ctx.closePath(); ctx.fill();
+  // deck stripe + rail
+  ctx.fillStyle = '#c96a2e';
+  ctx.fillRect(bx - 74, deck - 4, 140, 5);
+  ctx.strokeStyle = '#e8dcc8'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(bx - 70, deck - 8); ctx.lineTo(bx + 62, deck - 8); ctx.stroke();
+  for (let i = 0; i < 6; i++) {
+    const rx = bx - 62 + i * 24;
+    ctx.beginPath(); ctx.moveTo(rx, deck - 8); ctx.lineTo(rx, deck - 2); ctx.stroke();
+  }
+  // cabin
+  ctx.fillStyle = '#efe9da';
+  ctx.beginPath(); ctx.roundRect(bx - 58, deck - 34, 40, 26, 3); ctx.fill();
+  ctx.fillStyle = '#cf4b32';
+  ctx.beginPath(); ctx.roundRect(bx - 62, deck - 40, 48, 8, 3); ctx.fill();
+  ctx.fillStyle = '#7fb4d4';
+  ctx.beginPath(); ctx.roundRect(bx - 50, deck - 28, 10, 8, 2); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(bx - 34, deck - 28, 10, 8, 2); ctx.fill();
+  // porthole on hull
+  ctx.fillStyle = '#ffd257';
+  ctx.beginPath(); ctx.arc(bx + 20, oy + 2, 3.4, 0, 7); ctx.fill();
+  // flag
+  ctx.strokeStyle = '#5b7086'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(bx + 36, oy - 58); ctx.lineTo(bx + 36, oy - 76); ctx.stroke();
+  const fw = Math.sin(t * 4) * 2;
+  ctx.fillStyle = '#ffd257';
+  ctx.beginPath();
+  ctx.moveTo(bx + 36, oy - 76);
+  ctx.quadraticCurveTo(bx + 48, oy - 74 + fw, bx + 56, oy - 71);
+  ctx.lineTo(bx + 36, oy - 66);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 
 // ---------- main render ----------
@@ -400,8 +474,13 @@ export function render(c, dt) {
     sky.addColorStop(0, '#aee3f8'); sky.addColorStop(1, '#d8f2fc');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, Math.max(0, waterTopScreen));
     // sun & clouds
-    ctx.fillStyle = 'rgba(255,240,180,.9)';
-    ctx.beginPath(); ctx.arc(W * .78, Math.max(30, waterTopScreen - 160), 34, 0, 7); ctx.fill();
+    const sy2 = Math.max(30, waterTopScreen - 160);
+    const halo = ctx.createRadialGradient(W * .78, sy2, 8, W * .78, sy2, 90);
+    halo.addColorStop(0, 'rgba(255,244,200,.95)'); halo.addColorStop(1, 'rgba(255,244,200,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(W * .78, sy2, 90, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffec9e';
+    ctx.beginPath(); ctx.arc(W * .78, sy2, 30, 0, 7); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,.85)';
     for (let i = 0; i < 3; i++) {
       const cx = (hash(i + 3) * W + G.t * (6 + i * 3)) % (W + 160) - 80;
@@ -476,14 +555,8 @@ export function render(c, dt) {
   }
 
   // ---- boat & claw ----
-  if (camY < 600) {
-    const boatY = -camY;
-    drawBoatAt(ctx, W / 2, boatY + 46, skinHue);
-  }
-  if (G.claw.state !== 'swing' || true) {
-    drawCable(ctx);
-    drawClaw(ctx, skinHue, G.claw.state, G.claw.hold, G.t);
-  }
+  drawBoatAt(ctx, skinHue, G.t);
+  drawClaw(ctx, skinHue, G.claw.state, G.claw.hold, G.t);
 
   // ---- particles ----
   drawP(ctx);
@@ -505,39 +578,32 @@ export function render(c, dt) {
   dg.addColorStop(0, 'rgba(0,0,0,0)'); dg.addColorStop(1, `rgba(0,4,12,${Math.min(.5, camY / 40000 + .12)})`);
   ctx.fillStyle = dg; ctx.fillRect(0, 0, W, H);
 
-  // waterline highlight
-  if (topScreen > 0 && topScreen < H) {
-    ctx.fillStyle = 'rgba(255,255,255,.5)';
-    ctx.fillRect(0, topScreen - 2, W, 3);
+  // waterline waves
+  if (topScreen > 0 && topScreen < H) drawWaves(ctx, topScreen, W, G.t);
+
+  ctx.restore();
+}
+
+// waterline wave strip
+function drawWaves(c, topScreen, W, t) {
+  ctx = c;
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,.5)';
+  ctx.beginPath();
+  ctx.moveTo(0, topScreen + 2);
+  for (let x = 0; x <= W; x += 24) {
+    ctx.lineTo(x, topScreen + Math.sin(x * 0.025 + t * 2.1) * 2.6);
   }
-
+  ctx.lineTo(W, topScreen + 7);
+  ctx.lineTo(0, topScreen + 7);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.25)';
+  ctx.beginPath();
+  ctx.moveTo(0, topScreen + 8);
+  for (let x = 0; x <= W; x += 30) {
+    ctx.lineTo(x, topScreen + 7 + Math.sin(x * 0.018 - t * 1.6) * 2.2);
+  }
+  ctx.lineTo(W, topScreen + 13); ctx.lineTo(0, topScreen + 13);
+  ctx.closePath(); ctx.fill();
   ctx.restore();
-}
-
-// boat drawn relative to current camY
-function drawBoatAt(c, x, y, skinHue) {
-  ctx = c;
-  ctx.save(); ctx.translate(x, y);
-  // hull
-  ctx.fillStyle = '#8a4a22';
-  ctx.beginPath(); ctx.moveTo(-52, -6); ctx.lineTo(52, -6); ctx.lineTo(36, 18); ctx.quadraticCurveTo(0, 24, -36, 18); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#a85a2c';
-  ctx.fillRect(-52, -10, 104, 6);
-  // cabin
-  ctx.fillStyle = '#e8e2d4'; ctx.fillRect(-30, -26, 26, 16);
-  ctx.fillStyle = '#5a8aa8'; ctx.fillRect(-26, -22, 8, 6);
-  ctx.fillStyle = '#c8402a'; ctx.fillRect(-32, -30, 30, 5);
-  // flag
-  ctx.strokeStyle = '#666'; ctx.lineWidth = 1.6;
-  ctx.beginPath(); ctx.moveTo(24, -10); ctx.lineTo(24, -34); ctx.stroke();
-  ctx.fillStyle = '#ffd257'; ctx.beginPath(); ctx.moveTo(24, -34); ctx.lineTo(38, -29); ctx.lineTo(24, -24); ctx.fill();
-  ctx.restore();
-}
-function drawCable(c) {
-  ctx = c;
-  const { bx, by } = craneAnchor();
-  const tip = clawTip();
-  ctx.strokeStyle = 'rgba(225,232,240,.8)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(bx, by - 26); ctx.lineTo(tip.x, tip.y - 15); ctx.stroke();
-  // crane boom drawn once at surface anchor
 }

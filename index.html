@@ -32,25 +32,25 @@ window.addEventListener('unhandledrejection', e => {
     <div class="pill depth-pill" id="pill-depth"><span class="ic hook"></span><b id="hud-depth">0m</b></div>
     <div class="spacer"></div>
     <div id="buff-chips"></div>
-    <button class="icon-btn" id="btn-settings" aria-label="settings">⚙</button>
+    <button class="icon-btn" id="btn-settings" data-icon="gear" data-size="20" aria-label="settings"></button>
   </div>
   <div id="zone-banner" class="hidden"></div>
   <div id="contract-chip" class="hidden"><b id="contract-timer"></b><span id="contract-goal"></span></div>
   <button id="btn-contract" class="side-btn hidden"></button>
   <div id="hud-bottom">
     <nav id="main-nav">
-      <button class="nav-btn" data-panel="upgrades"><span class="nav-ic">🔧</span><span class="nav-tx">UP</span><i class="dot hidden"></i></button>
-      <button class="nav-btn" data-panel="book"><span class="nav-ic">📖</span><span class="nav-tx">LOG</span><i class="dot hidden"></i></button>
-      <button class="nav-btn" data-panel="shop"><span class="nav-ic">🛒</span><span class="nav-tx">SHOP</span><i class="dot hidden"></i></button>
-      <button class="nav-btn" data-panel="tasks"><span class="nav-ic">📋</span><span class="nav-tx">JOBS</span><i class="dot hidden"></i></button>
-      <button class="nav-btn" data-panel="prestige"><span class="nav-ic">🌀</span><span class="nav-tx">CORE</span><i class="dot hidden"></i></button>
+      <button class="nav-btn" data-panel="upgrades"><span class="nav-ic" data-icon="wrench" data-size="19"></span><span class="nav-tx">UP</span><i class="dot hidden"></i></button>
+      <button class="nav-btn" data-panel="book"><span class="nav-ic" data-icon="book" data-size="19"></span><span class="nav-tx">LOG</span><i class="dot hidden"></i></button>
+      <button class="nav-btn" data-panel="shop"><span class="nav-ic" data-icon="cart" data-size="19"></span><span class="nav-tx">SHOP</span><i class="dot hidden"></i></button>
+      <button class="nav-btn" data-panel="tasks"><span class="nav-ic" data-icon="clipboard" data-size="19"></span><span class="nav-tx">JOBS</span><i class="dot hidden"></i></button>
+      <button class="nav-btn" data-panel="prestige"><span class="nav-ic" data-icon="core" data-size="19"></span><span class="nav-tx">CORE</span><i class="dot hidden"></i></button>
     </nav>
   </div>
   <div id="tut-tip" class="hidden"></div>
 </div>
 
 <!-- Slide-up panel -->
-<div id="panel" class="hidden"><div id="panel-card"><div id="panel-head"><b id="panel-title"></b><button id="panel-close">✕</button></div><div id="panel-body"></div></div></div>
+<div id="panel" class="hidden"><div id="panel-card"><div id="panel-head"><b id="panel-title"></b><button id="panel-close" data-icon="x" data-size="14"></button></div><div id="panel-body"></div></div></div>
 
 <!-- Modal popup root -->
 <div id="modal-root"></div>

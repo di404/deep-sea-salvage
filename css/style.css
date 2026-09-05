@@ -48,6 +48,11 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 #main-nav{display:flex;gap:8px;max-width:520px;margin:0 auto}
 .nav-btn{flex:1;background:rgba(4,26,44,.82);border:1px solid var(--line);border-radius:14px;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;backdrop-filter:blur(4px)}
 .nav-btn:active{transform:scale(.94)}
+.nav-btn.on{border-color:var(--gold);background:rgba(64,48,14,.55)}
+.nav-btn.on .nav-tx{color:var(--gold)}
+.nav-ic svg{display:block;margin:0 auto}
+.ic-s{display:inline-block;vertical-align:-3px}
+.nav-ic .ic-s{vertical-align:0}
 .nav-ic{font-size:20px;line-height:1}
 .nav-tx{font-size:10px;font-weight:900;letter-spacing:1px;color:var(--tx2)}
 .nav-btn .dot{position:absolute;top:5px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--red);border:1.5px solid #fff}
@@ -58,7 +63,11 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 
 /* ---------- panel ---------- */
 #panel{position:fixed;inset:0;background:rgba(2,12,22,.55);z-index:30;display:flex;align-items:flex-end;justify-content:center;pointer-events:auto;animation:fadeIn .18s}
-#panel-card{width:100%;max-width:560px;max-height:78%;background:var(--panel);border:1px solid var(--line);border-bottom:none;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;animation:up .22s ease-out}
+#panel-card{position:relative;width:100%;max-width:560px;max-height:78%;background:var(--panel);border:1px solid var(--line);border-bottom:none;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;animation:up .22s ease-out}
+#panel-head b{display:flex;align-items:center;gap:6px}
+#panel-close{width:32px;height:32px;border-radius:10px;background:var(--panel2);display:flex;align-items:center;justify-content:center;color:var(--tx2)}
+.m-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:10px;background:var(--panel2);color:var(--tx2);display:flex;align-items:center;justify-content:center;z-index:2}
+.modal h3{display:flex;align-items:center;justify-content:center;gap:7px}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 @keyframes fadeIn{from{opacity:0}}
 #panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
@@ -80,7 +89,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .btn.green{background:linear-gradient(180deg,#7feba4,#2cae5d);color:#053312}
 .btn.gray{background:#21465f;color:var(--tx2)}
 .btn:disabled{opacity:.45;pointer-events:none}
-.btn.ad::before{content:"▶ ";font-size:11px}
+.btn.ad::before{content:"";display:inline-block;width:0;height:0;border-left:7px solid currentColor;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;margin-right:5px;vertical-align:1px}
 .sect{margin:14px 0 8px;font-size:12px;font-weight:900;color:var(--tx2);letter-spacing:1.5px}
 .sect:first-child{margin-top:0}
 
@@ -120,7 +129,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 /* wheel / gacha */
 .wheel-wrap{position:relative;width:280px;margin:6px auto}
 .wheel-wrap canvas{width:100%;display:block}
-.wheel-ptr{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:26px;color:var(--gold);text-shadow:0 2px 3px #000;z-index:2}
+.wheel-ptr{position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:16px solid var(--gold);filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));z-index:2}
 .wheel-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;background:radial-gradient(circle at 35% 30%,#2a86c9,#0d4468);border:3px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;z-index:2}
 .center{text-align:center}
 .spin-count{font-size:12px;color:var(--tx2);margin:8px 0}
@@ -136,7 +145,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .sign-cell .d{color:var(--tx2);font-size:10px;margin-bottom:4px}
 .sign-cell .em{font-size:22px}
 .sign-cell.done{opacity:.45}
-.sign-cell.done::after{content:"✓";position:absolute;top:4px;right:7px;color:var(--green);font-weight:900}
+.sign-cell.done::after{content:"";position:absolute;top:7px;right:7px;width:9px;height:5px;border-left:2.5px solid var(--green);border-bottom:2.5px solid var(--green);transform:rotate(-45deg)}
 .sign-cell.today{border-color:var(--gold);animation:pulse2 1.2s infinite}
 .sign-cell.big{grid-column:span 2}
 @keyframes pulse2{0%,100%{box-shadow:0 0 0 0 rgba(255,210,87,.5)}50%{box-shadow:0 0 0 6px rgba(255,210,87,0)}}

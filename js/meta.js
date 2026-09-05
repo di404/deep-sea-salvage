@@ -3,6 +3,7 @@ import { getState, now, todayKey, fmt, writeSave } from './core.js';
 import { WHEEL, GACHA, GACHA_R, SIGNIN, TASK_POOL, RESEARCH, LAB, SKIN_BY, SKINS, getMods, coresFor, PRESTIGE_ZONE, ZONES } from './data.js';
 import { bus, addCoins, incomePerMin, resetWorld } from './game.js';
 import { requestAd, requestMidgame, adAvailable, SDK } from './ads.js';
+import { icon } from './icons.js';
 
 // ---------- daily reset ----------
 export function dailyReset() {
@@ -23,19 +24,19 @@ export function grantReward(rw, src = '') {
   if (rw.kind === 'coins') {
     const c = Math.max(30, incomePerMin() * rw.min);
     addCoins(c);
-    return { text: `+${fmt(c)} 🪙`, coins: c };
+    return { text: `${icon('coin', 16)} +${fmt(c)}`, coins: c };
   }
   if (rw.kind === 'gems') {
     const g = Math.round(rw.n * mods.gemMult);
     st.gems += g; bus.emit('gems', g);
-    return { text: `+${g} 💎`, gems: g };
+    return { text: `${icon('gem', 16)} +${g}`, gems: g };
   }
-  if (rw.kind === 'buff') { addBuff('x2', rw.min); return { text: `⚡ 2× ${rw.min}min` }; }
-  if (rw.kind === 'egg') { st.gacha = st.gacha || { count: 0, tickets: 0 }; st.gacha.tickets += rw.n; return { text: `🥚 x${rw.n}` }; }
+  if (rw.kind === 'buff') { addBuff('x2', rw.min); return { text: `${icon('bolt', 16)} 2× ${rw.min}min` }; }
+  if (rw.kind === 'egg') { st.gacha = st.gacha || { count: 0, tickets: 0 }; st.gacha.tickets += rw.n; return { text: `${icon('egg', 16)} x${rw.n}` }; }
   if (rw.kind === 'jackpot7') {
     const g = Math.round(100 * mods.gemMult);
     st.gems += g; st.gacha = st.gacha || { count: 0, tickets: 0 }; st.gacha.tickets += 1;
-    return { text: `+${g} 💎 +🥚`, gems: g };
+    return { text: `${icon('gem', 16)} +${g} ${icon('egg', 16)}`, gems: g };
   }
   return { text: '?' };
 }
@@ -107,14 +108,14 @@ function applyGacha(item) {
   if (item.type === 'skin') {
     if (st.skins.includes(item.id)) {
       st.gems += 40;
-      return { type: 'dup', skin: SKIN_BY[item.id], text: `${SKIN_BY[item.id].nE} → +40 💎`, r: SKIN_BY[item.id].r };
+      return { type: 'dup', skin: SKIN_BY[item.id], text: `${SKIN_BY[item.id].nE} → +40 ${icon('gem', 13)}`, r: SKIN_BY[item.id].r };
     }
     st.skins.push(item.id);
     return { type: 'skin', skin: SKIN_BY[item.id], text: SKIN_BY[item.id].nE, r: SKIN_BY[item.id].r };
   }
-  if (item.type === 'gems') { st.gems += item.n; return { type: 'gems', text: `+${item.n} 💎`, r: item.n >= 80 ? 2 : 1 }; }
-  if (item.type === 'buff') { addBuff('x2', item.min); return { type: 'buff', text: `⚡2× ${item.min}min`, r: 1 }; }
-  if (item.type === 'coins') { const c = incomePerMin() * item.min; addCoins(c); return { type: 'coins', text: `+${fmt(c)} 🪙`, r: 1 }; }
+  if (item.type === 'gems') { st.gems += item.n; return { type: 'gems', text: `+${item.n} ${icon('gem', 13)}`, r: item.n >= 80 ? 2 : 1 }; }
+  if (item.type === 'buff') { addBuff('x2', item.min); return { type: 'buff', text: `${icon('bolt', 13)} 2× ${item.min}min`, r: 1 }; }
+  if (item.type === 'coins') { const c = incomePerMin() * item.min; addCoins(c); return { type: 'coins', text: `+${fmt(c)} ${icon('coin', 13)}`, r: 1 }; }
   return { type: '?', text: '?', r: 0 };
 }
 
