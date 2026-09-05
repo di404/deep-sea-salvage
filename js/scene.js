@@ -2,7 +2,7 @@
 import { ZONES, SKIN_BY } from './data.js';
 import { getState, rand } from './core.js';
 import { G, PPM, clawTip, craneAnchor } from './game.js';
-import { pool, drawP } from './fx.js';
+import { pool, drawP, spawnP } from './fx.js';
 
 // ---------- color utils ----------
 function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
@@ -533,11 +533,11 @@ export function render(c, dt) {
     }
   }
 
-  // ---- ambient bubbles ----
+  // ---- ambient bubbles (spawn below the view in WORLD space, varied depth) ----
   bubbleAcc += dt;
   if (bubbleAcc > .3) {
     bubbleAcc = 0;
-    import('./fx.js').then(fx => fx.spawnP(Math.random() * W, camY + H + 10, 'bubble', 'rgba(255,255,255,.5)', 1));
+    spawnP(Math.random() * W, camY + H + rand(20, 320), 'bubble', 'rgba(255,255,255,.5)', 1);
   }
 
   // ---- entities ----
@@ -553,7 +553,7 @@ export function render(c, dt) {
     const sy = e.ym * PPM - camY + bob;
     if (sy < -80 || sy > H + 80) continue;
     drawCreature(ctx, e.def, e.x * W, sy, G.t, { dir: e.dir > 0 ? 1 : -1, golden: e.golden, ghost: ZONES[st.zone].mech === 'ghost' });
-    if (e.golden && Math.random() < .1) import('./fx.js').then(fx => fx.spawnP(e.x * W, sy, 'spark', '#ffe680', 1));
+    if (e.golden && Math.random() < .1) spawnP(e.x * W, e.ym * PPM, 'spark', '#ffe680', 1);
   }
 
   // ---- rush squid ----
@@ -566,8 +566,8 @@ export function render(c, dt) {
   drawBoatAt(ctx, skinHue, G.t);
   drawClaw(ctx, skinHue, G.claw.state, G.claw.hold, G.t);
 
-  // ---- particles ----
-  drawP(ctx);
+  // ---- particles (world space) ----
+  drawP(ctx, camY);
 
   // ---- depth ruler ----
   ctx.font = '10px sans-serif'; ctx.textAlign = 'right';

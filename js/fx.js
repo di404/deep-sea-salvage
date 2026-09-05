@@ -8,8 +8,8 @@ export function spawnP(x, y, type, color, n = 1) {
     if (pool.length >= MAX) pool.shift();
     const a = Math.random() * Math.PI * 2, sp = 20 + Math.random() * 80;
     pool.push({
-      x, y, vx: Math.cos(a) * sp, vy: type === 'bubble' ? -(30 + Math.random() * 60) : Math.sin(a) * sp,
-      life: 1, decay: type === 'bubble' ? .5 : 1.6, size: type === 'bubble' ? 2 + Math.random() * 4 : 2 + Math.random() * 3,
+      x, y, vx: Math.cos(a) * sp, vy: type === 'bubble' ? -(40 + Math.random() * 70) : Math.sin(a) * sp,
+      life: 1, decay: type === 'bubble' ? .3 : 1.6, size: type === 'bubble' ? 2 + Math.random() * 4 : 2 + Math.random() * 3,
       color, type,
     });
   }
@@ -23,15 +23,18 @@ export function updateP(dt) {
     if (p.life <= 0) pool.splice(i, 1);
   }
 }
-export function drawP(ctx) {
+export function drawP(ctx, camY = 0) {
+  // particles live in WORLD space — anchored to the scene, not the camera
   for (const p of pool) {
+    const y = p.y - camY;
+    if (y < -20 || y > ctx.canvas.height / (ctx.getTransform().a || 1) + 20) continue;
     ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
     if (p.type === 'bubble') {
       ctx.strokeStyle = p.color; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 7); ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x, y, p.size, 0, 7); ctx.stroke();
     } else {
       ctx.fillStyle = p.color;
-      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      ctx.fillRect(p.x - p.size / 2, y - p.size / 2, p.size, p.size);
     }
   }
   ctx.globalAlpha = 1;
