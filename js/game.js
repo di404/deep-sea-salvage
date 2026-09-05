@@ -177,6 +177,8 @@ export function update(dt) {
       if (c.hold.length >= cap) { c.state = 'haul'; break; }
     }
     if (c.state === 'drop' && tip.y >= maxD) c.state = 'haul';
+    // swung off-screen (shallow angle, missed everything) — reel back immediately
+    if (c.state === 'drop' && (tip.x < 14 || tip.x > G.W - 14)) c.state = 'haul';
   } else if (c.state === 'haul') {
     c.d -= haulSpd * dt;
     if (c.d <= ARM) { c.d = ARM; sellHold(); c.state = 'swing'; }
