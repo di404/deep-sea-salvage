@@ -104,6 +104,13 @@ export function catchSquid() {
   SDK.happytime();
 }
 
+// depth value gradient: catches deeper in the zone are worth more (up to ×2.5)
+export function depthMult(ym) {
+  const z = ZONES[getState().zone];
+  const t = Math.max(0, Math.min(1, (ym - z.depth[0]) / (z.depth[1] - z.depth[0])));
+  return 1 + 1.5 * t;
+}
+
 export function addCoins(n) {
   const st = getState();
   st.coins += n; st.lifetime.earned += n; st.lifetime.runEarned += n;
@@ -232,7 +239,7 @@ export function update(dt) {
 function sellHold() {
   const st = getState(), mods = getMods(st), c = G.claw;
   if (!c.hold.length) return;
-  let total = 0, anyGolden = false;
+  let total = 0, anyGolden = false, maxMult = 1;
   for (const e of c.hold) {
     const def = e.def;
     let v = def.v;
@@ -241,7 +248,9 @@ function sellHold() {
     if (def.zone === 5) v *= 3;
     if (G.surge.active) v *= 2;
     if (Math.random() < mods.x2Proc) v *= 2;
-    v *= mods.valueMult;
+    v *= depthMult(e.ym) * mods.valueMult;
+    e.lastMult = depthMult(e.ym);
+    if (e.lastMult > maxMult) maxMult = e.lastMult;
     total += v;
     const isNew = !st.book[def.id];
     st.book[def.id] = (st.book[def.id] || 0) + 1;
@@ -260,6 +269,7 @@ function sellHold() {
   const { bx } = craneAnchor();
   spawnP(bx, 8, 'splash', '#cfeeff', 14);
   floatText(bx + 60, 60, `+${fmt(total)}`, anyGolden ? '#ffd257' : '#ffffff');
+  if (maxMult >= 1.4) floatText(bx + 60, 88, `DEEP ×${maxMult.toFixed(1)}`, '#8fd4a8');
   SFX.coin(c.hold.length); if (anyGolden) SFX.golden();
   c.hold = [];
 }

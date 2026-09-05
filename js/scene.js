@@ -1,5 +1,5 @@
 // scene.js — all rendering is procedural canvas (zero image assets)
-import { ZONES, SKIN_BY } from './data.js';
+import { ZONES, CREATURES, SKIN_BY } from './data.js';
 import { getState, rand } from './core.js';
 import { G, PPM, clawTip, craneAnchor } from './game.js';
 import { pool, drawP, spawnP } from './fx.js';
@@ -569,17 +569,24 @@ export function render(c, dt) {
   // ---- particles (world space) ----
   drawP(ctx, camY);
 
-  // ---- depth ruler ----
-  ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
-  const stepM = 100;
-  const m0 = Math.floor(camY / PPM / stepM) * stepM, m1 = (camY + H) / PPM;
-  ctx.fillStyle = 'rgba(255,255,255,.35)';
-  for (let m = Math.max(stepM, m0); m < m1; m += stepM) {
-    const sy = m * PPM - camY;
-    const big = m % 500 === 0;
-    ctx.fillRect(W - (big ? 26 : 14), sy, big ? 20 : 8, 1);
-    if (big) ctx.fillText(m + 'm', W - 30, sy + 3);
+  // ---- aim laser + sonar (the skill interface: see targets, see your trajectory) ----
+  if (G.claw.state === 'swing' || G.claw.state === 'drop') {
+    const tip = clawTip();
+    const dx = Math.sin(G.claw.ang), dy = Math.cos(G.claw.ang);
+    const maxD = ZONES[st.zone].depth[1] * PPM;
+    const len = Math.min(maxD - tip.y, (dx > 0 ? (W - 70 - tip.x) / dx : dx < 0 ? (14 - tip.x) / dx : 9e9));
+    const lenPx = Math.max(0, Math.min(len, 2600));
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,.30)';
+    ctx.lineWidth = 2; ctx.setLineDash([6, 10]);
+    ctx.beginPath();
+    ctx.moveTo(tip.x, tip.y + (-camY));
+    ctx.lineTo(tip.x + dx * lenPx, tip.y + (-camY) + dy * lenPx);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
   }
+  drawSonar(ctx, W, H, st, camY);
 
   // ---- vignette for depth ----
   const dg = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H);
@@ -591,6 +598,86 @@ export function render(c, dt) {
 
   ctx.restore();
 }
+
+// sonar panel: the whole zone column as a live map — targets, threats, and your trajectory
+function drawSonar(c, W, H, st, camY) {
+  ctx = c;
+  const zone = ZONES[st.zone];
+  const PW = 44, PX = W - PW - 8, PY = 84, PH = Math.min(H - 234, 480);
+  if (PH < 120) return;
+  const map = ym => PY + 6 + (ym - zone.depth[0]) / (zone.depth[1] - zone.depth[0]) * (PH - 12);
+  // panel
+  ctx.save();
+  ctx.globalAlpha = .92;
+  ctx.fillStyle = 'rgba(4,20,36,.72)';
+  ctx.beginPath(); ctx.roundRect(PX, PY, PW, PH, 10); ctx.fill();
+  ctx.strokeStyle = 'rgba(120,180,220,.35)'; ctx.lineWidth = 1; ctx.stroke();
+  // depth = value gradient (deeper is warmer = more valuable)
+  const gr = ctx.createLinearGradient(0, PY + 6, 0, PY + PH - 6);
+  gr.addColorStop(0, 'rgba(110,231,138,.10)');
+  gr.addColorStop(1, 'rgba(255,210,87,.16)');
+  ctx.fillStyle = gr;
+  ctx.beginPath(); ctx.roundRect(PX + 3, PY + 6, PW - 6, PH - 12, 8); ctx.fill();
+  ctx.restore();
+  // trajectory: where the claw will travel if dropped now
+  const { bx, by } = craneAnchor();
+  const dx = Math.sin(G.claw.ang), dy = Math.cos(G.claw.ang);
+  const clawDepth0 = -by / PPM + zone.depth[0]; // pivot depth within the zone (≈0)
+  const px0 = bx + dx * ARM_LEN, py0 = by + dy * ARM_LEN;
+  const tx = px0 + dx * 2600, tyw = py0 + dy * 2600;
+  const ym0 = py0 / PPM, ym1 = Math.min(zone.depth[1], tyw / PPM);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 2; ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.moveTo(PX + 6 + (px0 / W) * (PW - 12), map(ym0));
+  ctx.lineTo(PX + 6 + Math.max(0, Math.min(1, tx / W)) * (PW - 12), map(Math.max(zone.depth[0], ym1)));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  // contacts
+  const held = new Set(G.claw.hold);
+  for (const e of G.ents) {
+    if (held.has(e)) continue;
+    const ym = Math.max(zone.depth[0], Math.min(zone.depth[1], e.ym));
+    const sy = map(ym);
+    const sx = PX + 6 + Math.max(0, Math.min(1, e.x)) * (PW - 12);
+    if (e.mine) {
+      ctx.fillStyle = '#ff5252';
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-2.6, -2.6, 5.2, 5.2); ctx.restore();
+      continue;
+    }
+    const def = e.def;
+    const tier = def.v / (CREATURE_ZONE_MAX[def.zone] || 1);
+    const rad = 2 + tier * 4;
+    ctx.fillStyle = e.golden ? '#ffd257' : def.r === 3 ? '#c08bff' : def.r === 2 ? '#7fb0ff' : def.r === 1 ? '#5ee08a' : 'rgba(220,240,255,.75)';
+    ctx.beginPath(); ctx.arc(sx, sy, rad, 0, 7); ctx.fill();
+    if (e.golden || def.r === 3) {
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(sx, sy, rad + 2.5, 0, 7); ctx.stroke();
+    }
+  }
+  // claw marker while away from surface
+  if (G.claw.state !== 'swing') {
+    const tip = clawTip();
+    const ym = Math.max(zone.depth[0], Math.min(zone.depth[1], tip.y / PPM));
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(PX + 2, map(ym)); ctx.lineTo(PX - 4, map(ym) - 4); ctx.lineTo(PX - 4, map(ym) + 4);
+    ctx.closePath(); ctx.fill();
+  }
+  // labels
+  ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.fillText('0m', PX + PW / 2, PY - 4);
+  ctx.fillText(Math.round(zone.depth[1]) + 'm', PX + PW / 2, PY + PH + 11);
+}
+const ARM_LEN = 170;
+const CREATURE_ZONE_MAX = (() => {
+  const m = {};
+  for (const c of CREATURES) m[c.zone] = Math.max(m[c.zone] || 1, c.v);
+  return m;
+})();
 
 // waterline wave strip
 function drawWaves(c, topScreen, W, t) {
