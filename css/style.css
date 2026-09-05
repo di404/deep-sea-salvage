@@ -57,8 +57,8 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .nav-tx{font-size:10px;font-weight:900;letter-spacing:1px;color:var(--tx2)}
 .nav-btn .dot{position:absolute;top:5px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--red);border:1.5px solid #fff}
 
-#tut-tip{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;max-width:320px;background:#fff;color:#083049;font-weight:800;font-size:14px;padding:10px 16px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:center;pointer-events:none;animation:tip .4s}
-#tut-tip::after{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(45deg);width:16px;height:16px;background:#fff}
+#tut-tip{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;max-width:320px;background:#fff;color:#083049;font-weight:800;font-size:14px;padding:10px 16px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:center;pointer-events:none;animation:tip .4s;transition:opacity .4s}
+#tut-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%) rotate(225deg);margin-top:-8px;width:16px;height:16px;background:#fff}
 @keyframes tip{from{opacity:0;transform:translate(-50%,8px)}}
 
 /* ---------- panel ---------- */

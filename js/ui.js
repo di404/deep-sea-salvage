@@ -608,6 +608,7 @@ export function openSettings() {
 }
 
 // ---------- tutorial ----------
+let tutTimer = null;
 export function showTut(step) {
   const tip = $('#tut-tip');
   const st = getState();
@@ -615,9 +616,17 @@ export function showTut(step) {
   if (!msg) { tip.classList.add('hidden'); return; }
   tip.textContent = msg;
   tip.classList.remove('hidden');
+  tip.style.opacity = '1';
   st.tutorial = Math.max(st.tutorial, step);
+  clearTimeout(tutTimer);
+  // hints never stick around: auto-dismiss after 8s and advance the step
+  tutTimer = setTimeout(() => {
+    tip.style.opacity = '0';
+    setTimeout(() => tip.classList.add('hidden'), 450);
+    if (getState().tutorial <= step) { getState().tutorial = step + 1; writeSave(); }
+  }, 8000);
 }
-export function hideTut() { $('#tut-tip').classList.add('hidden'); }
+export function hideTut() { clearTimeout(tutTimer); const t = $('#tut-tip'); if (t) t.classList.add('hidden'); }
 
 // ---------- toast (accepts inline SVG) ----------
 export function floatToast(html, color = '#ffd257') {
