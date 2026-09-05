@@ -346,45 +346,50 @@ export function drawClaw(c, skinHue, state, hold, t) {
   ctx.lineWidth = 2.4;
   ctx.beginPath();
   ctx.moveTo(bx, by + oy);
-  ctx.lineTo(tip.x - dx * 15, tip.y + oy - dy * 15);
+  ctx.lineTo(tip.x - dx * 11, tip.y + oy - dy * 11);
   ctx.stroke();
   const prism = skinHue < 0;
   const hue = prism ? (t * 60) % 360 : skinHue;
-  const open = state === 'drop' ? 1 : 0.18;
+  const open = state === 'drop' ? 1 : 0.15;
   ctx.save();
   ctx.translate(tip.x, tip.y + oy);
   ctx.rotate(-ang);
-  // mount block (steel)
-  const mg = ctx.createLinearGradient(0, -16, 0, -6);
+  // shackle ring — the cable visibly plugs into it, on the claw's axis
+  ctx.strokeStyle = '#46586b'; ctx.lineWidth = 2.8;
+  ctx.beginPath(); ctx.arc(0, -14, 3.8, 0, 7); ctx.stroke();
+  // mount block (steel, centered on the axis)
+  const mg = ctx.createLinearGradient(0, -11, 0, 0);
   mg.addColorStop(0, '#eef3f8'); mg.addColorStop(1, '#93a7ba');
   ctx.fillStyle = mg;
   ctx.strokeStyle = '#5b7086'; ctx.lineWidth = 1.6;
-  ctx.beginPath(); ctx.roundRect(-9, -16, 18, 10, 3); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(-10, -11, 20, 12, 3.5); ctx.fill(); ctx.stroke();
   ctx.fillStyle = '#ffd257';
-  ctx.beginPath(); ctx.arc(0, -11, 2.4, 0, 7); ctx.fill();
-  // pincers (skin-tinted metal, hinge below mount)
-  const pg = ctx.createLinearGradient(0, -6, 0, 26);
+  ctx.beginPath(); ctx.arc(0, -5.5, 2.6, 0, 7); ctx.fill();
+  // pincers: symmetric around the axis, hinged at the mount base, opening sideways
+  const pg = ctx.createLinearGradient(0, 0, 0, 28);
   pg.addColorStop(0, hsl(hue, 52, 68));
   pg.addColorStop(1, hsl(hue, 55, 38));
   for (const s of [-1, 1]) {
-    ctx.save(); ctx.scale(s, 1); ctx.rotate(s * open * 0.55);
+    ctx.save();
+    ctx.translate(0, 1);
+    ctx.rotate(s * open * 0.42);
     ctx.fillStyle = pg; ctx.strokeStyle = hsl(hue, 50, 26); ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.moveTo(3, -6);
-    ctx.quadraticCurveTo(15, -2, 14, 10);
-    ctx.quadraticCurveTo(13.4, 16, 8, 18);
-    ctx.lineTo(5.6, 20);
-    ctx.quadraticCurveTo(9, 10, 3, 2);
+    ctx.moveTo(3.5, -6);
+    ctx.quadraticCurveTo(17, -3, 16, 11);
+    ctx.quadraticCurveTo(15, 19, 9, 21);
+    ctx.lineTo(6, 23);
+    ctx.quadraticCurveTo(10, 11, 3, -1);
     ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();
   }
   ctx.fillStyle = hsl(hue, 40, 30);
-  ctx.beginPath(); ctx.arc(0, -5, 2.8, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, 3, 0, 7); ctx.fill();
   ctx.restore();
   // held catch hangs along the cable direction
   hold.forEach((e, i) => {
-    const hx = tip.x + dx * (18 + i * 26);
-    const hy = tip.y + oy + dy * (18 + i * 26);
+    const hx = tip.x + dx * (20 + i * 26);
+    const hy = tip.y + oy + dy * (20 + i * 26);
     drawCreature(c, e.def, hx, hy, t, { scale: .5, golden: e.golden, dir: 1 });
   });
 }
