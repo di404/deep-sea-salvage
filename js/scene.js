@@ -399,18 +399,20 @@ function drawBoatAt(c, skinHue, t) {
   ctx.save();
   ctx.translate(0, 0);
   // crane post + boom (pivot must match craneAnchor)
-  const px = bx + 74, py = oy - 30;
-  ctx.strokeStyle = '#6d7f92'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(bx + 36, deck - 2); ctx.lineTo(bx + 36, oy - 58); ctx.stroke();
-  ctx.lineWidth = 5;
-  ctx.beginPath(); ctx.moveTo(bx + 36, oy - 56); ctx.lineTo(px, py + 4); ctx.stroke();
+  const px = bx + 88, py = oy - 40;
+  ctx.strokeStyle = '#6d7f92'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(bx + 40, deck - 2); ctx.lineTo(bx + 40, oy - 74); ctx.stroke();
+  ctx.strokeStyle = '#8496a8'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(bx + 40, deck - 4); ctx.lineTo(bx + 40, oy - 68); ctx.stroke();
+  ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(bx + 40, oy - 72); ctx.lineTo(px, py + 5); ctx.stroke();
   ctx.strokeStyle = '#46586b'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(bx + 36, oy - 50); ctx.lineTo(px - 8, py + 8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx + 40, oy - 64); ctx.lineTo(px - 12, py + 12); ctx.stroke();
   // pulley
   ctx.fillStyle = '#37485a';
-  ctx.beginPath(); ctx.arc(px, py, 6.5, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(px, py, 7.5, 0, 7); ctx.fill();
   ctx.fillStyle = '#ffd257';
-  ctx.beginPath(); ctx.arc(px, py, 2.2, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(px, py, 2.6, 0, 7); ctx.fill();
   // hull
   const hull = ctx.createLinearGradient(0, deck, 0, oy + 16);
   hull.addColorStop(0, '#a85a2c'); hull.addColorStop(1, '#6e3a1a');
@@ -444,13 +446,13 @@ function drawBoatAt(c, skinHue, t) {
   ctx.beginPath(); ctx.arc(bx + 20, oy + 2, 3.4, 0, 7); ctx.fill();
   // flag
   ctx.strokeStyle = '#5b7086'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(bx + 36, oy - 58); ctx.lineTo(bx + 36, oy - 76); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx + 40, oy - 74); ctx.lineTo(bx + 40, oy - 92); ctx.stroke();
   const fw = Math.sin(t * 4) * 2;
   ctx.fillStyle = '#ffd257';
   ctx.beginPath();
-  ctx.moveTo(bx + 36, oy - 76);
-  ctx.quadraticCurveTo(bx + 48, oy - 74 + fw, bx + 56, oy - 71);
-  ctx.lineTo(bx + 36, oy - 66);
+  ctx.moveTo(bx + 40, oy - 92);
+  ctx.quadraticCurveTo(bx + 52, oy - 90 + fw, bx + 60, oy - 87);
+  ctx.lineTo(bx + 40, oy - 82);
   ctx.closePath(); ctx.fill();
   ctx.restore();
 }

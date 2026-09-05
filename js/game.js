@@ -22,7 +22,8 @@ export function resize() {
   const c = document.getElementById('game');
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   c.width = G.W * dpr; c.height = G.H * dpr;
-  c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+  // CPU-backed 2D context: reliable readback/QA-sampling and consistent on low-end devices
+  c.getContext('2d', { willReadFrequently: true }).setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 // ---------- world reset (on zone change / prestige / load) ----------
@@ -69,9 +70,10 @@ function ensureBands(topM, botM) {
 }
 
 // ---------- claw ----------
-const SWING_W = 1.5, MAX_ANG = 1.02, ARM = 36;
-// pivot = crane boom tip (right side of the boat, above the waterline)
-export function craneAnchor() { return { bx: G.W * 0.5 + 74, by: -30 }; }
+const SWING_W = 1.5, MAX_ANG = 1.05, ARM = 170;
+// pivot = crane boom tip (right of the boat, above the waterline).
+// ARM >> pivot height so the claw always hangs at/below the water surface.
+export function craneAnchor() { return { bx: G.W * 0.5 + 88, by: -40 }; }
 export function clawTip() {
   const c = G.claw, { bx, by } = craneAnchor();
   return { x: bx + Math.sin(c.ang) * c.d, y: by + Math.cos(c.ang) * c.d };
