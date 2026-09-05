@@ -201,13 +201,50 @@ export const SFX = {
     if (!this.music || musicNodes) return;
     try {
       const a = ac();
-      const o = a.createOscillator(), g = a.createGain(), f = a.createBiquadFilter();
-      o.type = 'sine'; o.frequency.value = 55;
-      f.type = 'lowpass'; f.frequency.value = 220;
-      g.gain.value = .05;
-      o.connect(f).connect(g).connect(a.destination); o.start();
-      musicNodes = { o, g };
+      const master = a.createGain();
+      master.gain.setValueAtTime(0, a.currentTime);
+      master.gain.linearRampToValueAtTime(.4, a.currentTime + 2.5);
+      master.connect(a.destination);
+      const filter = a.createBiquadFilter();
+      filter.type = 'lowpass'; filter.frequency.value = 850;
+      filter.connect(master);
+      // slow generative chord pad — no static drones
+      const CHORDS = [
+        [130.8, 261.6, 329.6, 392.0],   // C
+        [110.0, 220.0, 261.6, 329.6],   // Am
+        [87.3, 174.6, 261.6, 349.2],    // F
+        [98.0, 196.0, 293.7, 392.0],    // G
+      ];
+      let idx = 0;
+      const playChord = () => {
+        const chord = CHORDS[idx++ % CHORDS.length];
+        const t = a.currentTime;
+        chord.forEach((f, i) => {
+          const o = a.createOscillator(), g = a.createGain();
+          o.type = i === 0 ? 'triangle' : 'sine';
+          o.frequency.value = f;
+          o.detune.value = Math.random() * 8 - 4;
+          const peak = i === 0 ? .07 : .05;
+          g.gain.setValueAtTime(0, t);
+          g.gain.linearRampToValueAtTime(peak, t + 2.6);
+          g.gain.setValueAtTime(peak, t + 5.2);
+          g.gain.linearRampToValueAtTime(0, t + 7.8);
+          o.connect(g).connect(filter);
+          o.start(t); o.stop(t + 8);
+        });
+      };
+      playChord();
+      const iv = setInterval(() => { if (this.music) playChord(); }, 7200);
+      musicNodes = {
+        stop() {
+          clearInterval(iv);
+          try { master.gain.linearRampToValueAtTime(0, a.currentTime + .4); } catch (e) { }
+          setTimeout(() => { try { master.disconnect(); } catch (e) { } }, 600);
+        }
+      };
     } catch (e) { }
   },
-  stopMusic() { if (musicNodes) { try { musicNodes.o.stop(); } catch (e) { } musicNodes = null; } },
+  stopMusic() {
+    if (musicNodes) { musicNodes.stop(); musicNodes = null; }
+  },
 };
